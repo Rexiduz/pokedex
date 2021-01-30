@@ -4,7 +4,7 @@ const paginate = require('../../utils').paginate
 const isEmpty = require('lodash').isEmpty
 
 router.get('/', (req, res) => {
-  const { name, type, limit = 20, page } = req.query
+  const { search, name, type, limit = 20, page } = req.query
   let CardCollection
   let result
 
@@ -32,15 +32,21 @@ router.get('/', (req, res) => {
     )
   }
 
-  // Not support pagination
-  if (name && type) {
+  if (search) {
+    console.log('search', search)
     result = CardCollection.findAll((card) => {
-      const validType = isIncluded(req?.query?.type, card.type)
-      const validName = isIncluded(req?.query?.name, card.name)
+      const validType = isIncluded(card.type, search)
+      const validName = isIncluded(card.name, search)
+      return validType || validName
+    })
+  } else if (name && type)
+    result = CardCollection.findAll((card) => {
+      const validType = isIncluded(card.type, type)
+      const validName = isIncluded(card.name, name)
 
       return validType && validName
     })
-  } else if (name) result = CardCollection.findAll('name', name)
+  else if (name) result = CardCollection.findAll('name', name)
   else if (type) result = CardCollection.findAll('type', type)
   else result = CardCollection.findAll()
 

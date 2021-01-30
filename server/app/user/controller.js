@@ -26,8 +26,8 @@ router.get('/:id*?', (req, res) => {
   if (name && type) {
     return res.json(
       UserCollection.findAll((card) => {
-        const validType = isIncluded(req?.query?.type, card.type)
-        const validName = isIncluded(req?.query?.name, card.name)
+        const validType = isIncluded(card.type, type)
+        const validName = isIncluded(card.name, name)
 
         return validType && validName
       })
