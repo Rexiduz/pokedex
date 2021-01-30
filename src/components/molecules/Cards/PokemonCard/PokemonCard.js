@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { Progress, Row, Col, Typography } from 'antd'
+import { Progress, Row, Col } from 'antd'
 import { Box, Text } from 'components/atoms'
 import { CloseOutlined } from '@ant-design/icons'
 import HappyIcon from 'assets/image/cute.png'
