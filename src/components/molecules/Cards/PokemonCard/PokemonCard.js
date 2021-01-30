@@ -67,7 +67,6 @@ const ListItem = ({
           box-shadow: ${theme.colors.cardBoxShadowHover} 0px 2px 8px 0px;
           .add-button { display: unset; } 
         }
-        
         `
       }
     >
@@ -88,10 +87,13 @@ const ListItem = ({
         loading="lazy"
       />
       <Box flex="1" px="2rem" py="0.25rem">
-        <Text $title fontSize="2.25rem">
-          <Typography.Paragraph ellipsis={{ rows: 1 }}>
-            {name}
-          </Typography.Paragraph>
+        <Text
+          $title
+          fontSize="2.25rem"
+          className="ant-typography-ellipsis-single-line"
+          mb="0.3rem"
+        >
+          {name}
         </Text>
         {progresses.map((item, index) => {
           return (
