@@ -6,5 +6,5 @@
 
 Running app by script
 
-`yarn dev` start app in development mode
-`yarn api` start api server
+- `yarn dev` start app in development mode
+- `yarn api` start api server
