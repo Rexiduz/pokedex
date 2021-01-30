@@ -5,11 +5,18 @@ import { useAsync } from 'core/hooks'
 import InfiniteScroll from 'react-infinite-scroller'
 import { Spin, List } from 'antd'
 import { Text, Box } from 'components/atoms'
-import { PokemonCard } from 'components/molecules/Cards'
+import { PokemonCard as BasePokemonCard } from 'components/molecules/Cards'
 import { ModalPokemon } from 'components/organisms/Modals'
 import Layout from 'components/templates/Layout'
 
 import { LIMIT, USER_ID } from 'constants/setting'
+import styled from 'styled-components'
+
+const PokemonCard = styled(BasePokemonCard)`
+  .card-name {
+    max-width: 220px;
+  }
+`
 
 const defaultParams = {
   page: 1,

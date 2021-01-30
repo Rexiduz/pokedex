@@ -90,8 +90,10 @@ const ListItem = ({
         <Text
           $title
           fontSize="2.25rem"
-          className="ant-typography-ellipsis-single-line"
+          className="ant-typography-ellipsis-single-line card-name"
           mb="0.3rem"
+          tooltip
+          ttpProps={{ placement: 'topLeft' }}
         >
           {name}
         </Text>
@@ -108,6 +110,7 @@ const ListItem = ({
                   }
                 >
                   <Progress
+                    trailColor="#e4e4e4"
                     strokeWidth={'20px'}
                     percent={item.value}
                     showInfo={false}
