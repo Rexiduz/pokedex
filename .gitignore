@@ -25,6 +25,6 @@ yarn-debug.log*
 yarn-error.log*
 
 
-/server/assets/file/*
+/server/assets/file/*.json
 
 
