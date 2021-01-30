@@ -1,0 +1,76 @@
+@import url('https://fonts.googleapis.com/css2?family=Atma:wght@700&family=Gaegu&display=swap');
+
+body {
+  font-family: Atma, cursive;
+  font-size: 16px;
+}
+
+.fullscreen {
+  width: 100vw;
+  height: 100vh;
+}
+
+.full {
+  width: 100%;
+  height: 100%;
+}
+
+.flex {
+  display: flex;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.relative {
+  position: relative;
+}
+
+.absolute {
+  position: absolute;
+}
+
+.center {
+  @extend .flex;
+  @extend .justify-center;
+  @extend .items-center;
+}
+
+.center-x {
+  @extend .flex;
+  @extend .justify-center;
+}
+
+.center-y {
+  @extend .flex;
+  @extend .items-center;
+  @extend .flex-col;
+}
+
+.absolute-center {
+  @extend .absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.circle {
+  border-radius: 50%;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.user-select-none {
+  user-select: none;
+}
