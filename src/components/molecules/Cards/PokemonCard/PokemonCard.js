@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { Progress, Row, Col } from 'antd'
+import { Progress, Row, Col, Typography } from 'antd'
 import { Box, Text } from 'components/atoms'
 import { CloseOutlined } from '@ant-design/icons'
 import HappyIcon from 'assets/image/cute.png'
@@ -59,6 +59,8 @@ const ListItem = ({
       mb="1rem"
       inject={({ theme }) =>
         `
+        height: 268px;
+        overflow: auto;
         background: ${theme.colors.cardBackground}; 
         box-shadow: ${theme.colors.cardBoxShadow} 0px 2px 8px 0px;
         :hover { 
@@ -87,7 +89,9 @@ const ListItem = ({
       />
       <Box flex="1" px="2rem" py="0.25rem">
         <Text $title fontSize="2.25rem">
-          {name}
+          <Typography.Paragraph ellipsis={{ rows: 1 }}>
+            {name}
+          </Typography.Paragraph>
         </Text>
         {progresses.map((item, index) => {
           return (

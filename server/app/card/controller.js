@@ -3,13 +3,13 @@ const isIncluded = require('../../utils').isIncluded
 const paginate = require('../../utils').paginate
 const isEmpty = require('lodash').isEmpty
 
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   const { search, name, type, limit = 20, page } = req.query
   let CardCollection
-  let result
+  let result = []
 
   try {
-    CardCollection = req.DB.collection('card')
+    CardCollection = await req.DB.collection('card')
   } catch (e) {
     return res.json(req.Error.Server('CD000CLN', { data: [], error: e }))
   }
@@ -33,7 +33,6 @@ router.get('/', (req, res) => {
   }
 
   if (search) {
-    console.log('search', search)
     result = CardCollection.findAll((card) => {
       const validType = isIncluded(card.type, search)
       const validName = isIncluded(card.name, search)

@@ -22,7 +22,7 @@ module.exports = (req, res, next) => {
       }
     }
 
-    console.log(`>>:: ${req.originalUrl} ::`, JSON.stringify(arguments[0]))
+    // console.log(`>>:: ${req.originalUrl} ::`, JSON.stringify(arguments[0]))
     json.apply(res, arguments)
   }
 

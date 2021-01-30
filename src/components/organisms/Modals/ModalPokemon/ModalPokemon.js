@@ -3,7 +3,7 @@ import { useAsync } from 'core/hooks'
 import { API } from 'services'
 
 import InfiniteScroll from 'react-infinite-scroller'
-import { Modal, List } from 'antd'
+import { Modal as AntModal, List, Spin } from 'antd'
 import { Box, Input } from 'components/atoms'
 import { PokemonCard } from 'components/molecules/Cards'
 
@@ -11,24 +11,43 @@ import FindIcon from 'assets/image/search.png'
 import { LIMIT } from 'constants/setting'
 import debounce from 'lodash/debounce'
 import noop from 'lodash/noop'
+import styled from 'styled-components'
+
+const Modal = styled(AntModal)`
+  & {
+    width: 90vw !important;
+    max-width: 800px;
+  }
+`
 
 const defaultParams = {
   page: 1,
   limit: LIMIT
 }
 
-const ModalPokemon = ({ visible, onAddCard = noop, userList, ...props }) => {
+const ModalPokemon = ({
+  visible,
+  onAddCard: onAdd = noop,
+  userList,
+  pending,
+  ...props
+}) => {
   const [list, setList] = React.useState([])
+  const [itemAdded, setItemAdded] = React.useState(null)
 
   const savedParams = React.useRef(defaultParams)
   const savedUserCardIDList = React.useRef(userList)
+  const savedPending = React.useRef(false)
 
-  const { data, pending, execute } = useAsync(API.cards.get, false, {
+  const { data, execute } = useAsync(API.cards.get, false, {
     onSuccess: (data, arg) => {
       savedParams.current = arg
+      savedPending.current = false
       return data
     }
   })
+
+  const hasMore = data?.hasNext && !pending && !savedPending.current
 
   React.useEffect(() => {
     if (visible)
@@ -53,7 +72,19 @@ const ModalPokemon = ({ visible, onAddCard = noop, userList, ...props }) => {
     })
   }, [userList])
 
+  React.useEffect(() => {
+    if (!pending) setItemAdded(null)
+  }, [pending])
+
+  const onAddCard = (item) => {
+    setItemAdded(item)
+    onAdd(item)
+  }
+
   const loadMore = () => {
+    if (savedPending.current) return
+
+    savedPending.current = true
     execute(
       {
         ...savedParams.current,
@@ -90,7 +121,6 @@ const ModalPokemon = ({ visible, onAddCard = noop, userList, ...props }) => {
       footer={null}
       closable={false}
       style={{ top: '5vh' }}
-      width="90vw"
       bodyStyle={{
         paddingBottom: '8px'
       }}
@@ -105,18 +135,26 @@ const ModalPokemon = ({ visible, onAddCard = noop, userList, ...props }) => {
         }
         onChange={debounce(onInputChange, 500)}
       />
-
       <Box style={{ height: '78vh', overflow: 'auto' }}>
         <InfiniteScroll
           loadMore={() => loadMore()}
-          hasMore={!pending && data?.hasNext}
+          hasMore={hasMore}
           useWindow={false}
         >
           <List
-            loading={pending}
             dataSource={list}
             renderItem={(item) => (
-              <PokemonCard {...item} onAdd={() => onAddCard(item)} />
+              <Spin
+                tip="Adding..."
+                spinning={itemAdded?.id === item.id && pending}
+              >
+                <PokemonCard
+                  {...item}
+                  {...(!pending && {
+                    onAdd: () => onAddCard(item)
+                  })}
+                />
+              </Spin>
             )}
           />
         </InfiniteScroll>

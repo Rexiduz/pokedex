@@ -1,40 +1,118 @@
 const router = require('express').Router()
 const isIncluded = require('../../utils').isIncluded
-const isEmpty = require('lodash').isEmpty
+const paginate = require('../../utils').paginate
 
-router.get('/:id*?', (req, res) => {
-  const accountID = req.user?.userID ?? req.params.id
-  const { name, type, limit = 20 } = req.query
+router.get('/:id/card', async (req, res) => {
+  const accountID = req.params.id
+  const { search, limit = 20, page } = req.query
+  let result = []
+  let userData = {}
 
   let UserCollection
   try {
-    UserCollection = req.DB.collection(`user.${accountID}`)
+    UserCollection = await req.DB.collection(`user.${accountID}`)
+  } catch (e) {
+    return res.json(
+      req.Error.Server('US000CLN', { data: { cards: result }, error: e })
+    )
+  }
+
+  if (!limit || !page) {
+    return res.json(
+      req.Error.BadRequest('US000QPR', {
+        message: "['page','limit'] was required.",
+        data: {
+          cards: result
+        }
+      })
+    )
+  }
+
+  userData = UserCollection.findAll() || {}
+
+  if (search) {
+    result = userData.cards?.filter((card) => {
+      const validType = isIncluded(card.type, search)
+      const validName = isIncluded(card.name, search)
+      return validType || validName
+    })
+  } else result = userData.cards || []
+
+  const [cut, hasNext] = paginate(limit, page)(result)
+  return res.json({
+    cards: cut,
+    hasNext,
+    page,
+    total: result.length
+  })
+})
+
+router.post('/:id/card', async (req, res) => {
+  const payload = req.body?.data
+  const accountID = req.params.id
+
+  let UserCollection
+  try {
+    UserCollection = await req.DB.collection(`user.${accountID}`)
   } catch (e) {
     return res.json(req.Error.Server('US000CLN', { data: [], error: e }))
   }
 
-  if (isEmpty(req.query)) {
+  try {
+    const previousData = UserCollection.findAll()
+
+    const values = {
+      ...previousData,
+      cards: [...(previousData['cards'] || []), payload]
+    }
+
+    const success = await UserCollection.update(values)
+
+    if (!success) throw new Error('Update database failed')
+    return res.json({ success })
+  } catch (e) {
     return res.json(
-      req.Error.BadRequest('US001QPR', {
-        message: "one of params ['name','type','limit'] was required.",
-        data: []
+      req.Error.BadRequest('US0001DBF', {
+        data: [],
+        message: 'create data failed',
+        error: e
       })
     )
   }
+})
 
-  // Not support pagination
-  if (name && type) {
+router.delete('/:id/card/:cardID', async (req, res) => {
+  const accountID = req.params.id
+  const cardID = req.params.cardID
+
+  let UserCollection
+  try {
+    UserCollection = await req.DB.collection(`user.${accountID}`)
+  } catch (e) {
+    return res.json(req.Error.Server('US000CLN', { data: [], error: e }))
+  }
+
+  try {
+    const previousData = UserCollection.findAll()
+
+    const success = await UserCollection.update({
+      ...previousData,
+      cards: [...(previousData['cards'] || [])].filter(
+        (card) => card.id !== cardID
+      )
+    })
+
+    if (!success) throw new Error('Update database failed')
+    return res.json({ success })
+  } catch (e) {
     return res.json(
-      UserCollection.findAll((card) => {
-        const validType = isIncluded(card.type, type)
-        const validName = isIncluded(card.name, name)
-
-        return validType && validName
+      req.Error.BadRequest('US0001DBF', {
+        data: [],
+        message: 'create data failed',
+        error: e
       })
     )
-  } else if (name) return res.json(UserCollection.findAll('name', name))
-  else if (type) return res.json(UserCollection.findAll('type', type))
-  else return res.json(UserCollection.findAll().slice(0, limit))
+  }
 })
 
 module.exports = router

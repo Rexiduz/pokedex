@@ -32,8 +32,7 @@ const createCollection = (data, filepath) => {
           fs.writeFileSync(filepath, JSON.stringify(data))
           resolve(true)
         } catch (error) {
-          console.log('Update file error', error)
-          resolve(false)
+          throw error
         }
       })
     }
@@ -41,14 +40,14 @@ const createCollection = (data, filepath) => {
 }
 
 const createJsonDB = (FILEPATH_ROOT) => {
-  const INNER__COLLECTION = {}
-  const FILE_PATHS = {}
+  const CONFIGS_FILE = {}
 
   return {
     checkFile(filename, defaultValue = '') {
       const filepath = __dirname + '/' + FILEPATH_ROOT + filename
-      FILE_PATHS[filename] = {
-        path: filepath.replace(/(\/..\/)/, '/'),
+
+      CONFIGS_FILE[filename] = {
+        filepath,
         defaultValue
       }
 
@@ -58,43 +57,35 @@ const createJsonDB = (FILEPATH_ROOT) => {
         try {
           fs.writeFileSync(filepath, defaultValue)
         } catch (error) {
-          console.log('ERROR: create file', error)
+          throw error
         }
       } finally {
         return this
       }
     },
-    initializeCollection(colName) {
-      const fileCollectionName = colName + '.json'
-
-      INNER__COLLECTION[colName] = createCollection(
-        require(FILEPATH_ROOT + fileCollectionName),
-        FILE_PATHS[fileCollectionName].path
-      )
-    },
     init() {
-      Object.keys(FILE_PATHS).forEach((collectionName) => {
-        this.initializeCollection(collectionName.replace('.json', ''))
-      })
-
       return this
     },
-    collection(name) {
-      const instance = INNER__COLLECTION[name]
-      if (!instance) throw new Error('Collection ' + name + ' not-found.')
+    async collection(name) {
+      const config = CONFIGS_FILE[name + '.json']
+      const data = fs.readFileSync(config.filepath, {
+        encoding: 'utf8',
+        flag: 'r'
+      })
 
-      return instance
+      try {
+        return createCollection(JSON.parse(data), config.filepath)
+      } catch (e) {
+        throw e
+      }
     }
   }
 }
 
-const JsonDB = createJsonDB('../assets/file/')
-
-JsonDB.checkFile('user.520a4eb3-c11d-44eb-a9f8-41a79e0dc73a.json', '[]')
+module.exports = createJsonDB('../assets/file/')
+  .checkFile('user.520a4eb3-c11d-44eb-a9f8-41a79e0dc73a.json', '{}')
   .checkFile(
     'card.json',
     JSON.stringify(require(__dirname + '/../../src/assets/file/card.json'))
   )
   .init()
-
-module.exports = JsonDB

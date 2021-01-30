@@ -1,9 +1,11 @@
-const app = require('express')()
+const express = require('express')
+const app = express()
 const cors = require('cors')
 
 const PORT = 3030
 
 app.use(cors())
+app.use(express.json()) // body parser
 app.use(require('./middleware/responseInterceptor'))
 app.use(require('./middleware/applyErrorGenerator'))
 app.use(require('./middleware/authenticate'))

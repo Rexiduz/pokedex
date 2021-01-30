@@ -1,7 +1,7 @@
 import React from 'react'
 import noop from 'lodash/noop'
 
-const useAsync = (promise, immediate = true, opt) => {
+const useAsync = (promise, immediate = false, opt) => {
   const [pending, setPending] = React.useState(false)
   const [data, setData] = React.useState(null)
   const [error, setError] = React.useState(null)

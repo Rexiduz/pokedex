@@ -1,10 +1,17 @@
 import { ApiProvider } from './shared'
 
-export default (() => ({
+const cardApis = () => ({
   get({ id, ...params } = {}) {
-    return ApiProvider.users('get', id)(params)
+    return ApiProvider.users('get', `${id}/card`)(params)
   },
-  update({ id, ...data } = {}) {
-    return ApiProvider.users('update', id)(data)
+  update({ id, data } = {}) {
+    return ApiProvider.users('post', `${id}/card`)(data)
+  },
+  delete({ id, cardID } = {}) {
+    return ApiProvider.users('delete', `${id}/card/${cardID}`)()
   }
+})
+
+export default (() => ({
+  cards: cardApis()
 }))()
