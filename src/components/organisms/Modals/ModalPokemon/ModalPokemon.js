@@ -49,42 +49,42 @@ const ModalPokemon = ({
 
   const hasMore = data?.hasNext && !pending && !savedPending.current
 
+  const filterFromUserList = (list) =>
+    list.filter((item) => !savedUserCardIDList.current.includes(item.id))
+
   React.useEffect(() => {
-    if (visible)
+    if (visible) {
+      savedPending.current = true
+
       execute(savedParams.current, {
         onSuccess(data) {
-          const set = savedUserCardIDList.current
-          const list = data?.cards
-
-          const filtered = list.filter((item) => !set.includes(item.id))
-          setList(filtered)
+          setList(filterFromUserList(data?.cards))
         }
       })
-    else savedParams.current = defaultParams
+    } else savedParams.current = defaultParams
   }, [execute, visible])
 
   React.useEffect(() => {
-    const set = userList.map((i) => i.id)
-    savedUserCardIDList.current = set
-
-    setList((prev) => {
-      return prev.filter((item) => !set.includes(item.id))
-    })
+    savedUserCardIDList.current = userList.map((i) => i.id)
+    setList(filterFromUserList)
   }, [userList])
 
   React.useEffect(() => {
     if (!pending) setItemAdded(null)
   }, [pending])
 
-  const onAddCard = (item) => {
-    setItemAdded(item)
-    onAdd(item)
-  }
+  const onAddCard = React.useCallback(
+    (item) => {
+      setItemAdded(item)
+      onAdd(item)
+    },
+    [onAdd]
+  )
 
-  const loadMore = () => {
+  const loadMore = React.useCallback(() => {
     if (savedPending.current) return
-
     savedPending.current = true
+
     execute(
       {
         ...savedParams.current,
@@ -92,27 +92,78 @@ const ModalPokemon = ({
       },
       {
         onSuccess(data) {
-          setList((prev) => [...prev, ...data?.cards])
+          setList((prev) => filterFromUserList([...prev, ...data?.cards]))
         }
       }
     )
-  }
+  }, [execute])
 
-  const onInputChange = (e) => {
-    const value = e.target.value
-    execute(
-      {
-        ...savedParams.current,
-        page: 1,
-        search: value
-      },
-      {
-        onSuccess(data) {
-          setList(data?.cards)
+  const onInputChange = React.useCallback(
+    (e) => {
+      const value = e.target.value
+      savedPending.current = true
+
+      execute(
+        {
+          ...savedParams.current,
+          page: 1,
+          search: value
+        },
+        {
+          onSuccess(data) {
+            setList(filterFromUserList(data?.cards))
+          }
         }
-      }
+      )
+    },
+    [execute]
+  )
+
+  const memoInput = React.useMemo(
+    () => (
+      <Input
+        mb="1rem"
+        placeholder={'Find pokemon'}
+        suffix={
+          <Box size="24px" inject="img {width:inherit;height:inherit;}">
+            <img src={FindIcon} alt="search" loading="lazy" />
+          </Box>
+        }
+        onChange={debounce(onInputChange, 500)}
+      />
+    ),
+    [onInputChange]
+  )
+
+  const memoList = React.useMemo(() => {
+    return (
+      <List
+        dataSource={list}
+        renderItem={(item) => (
+          <Spin tip="Adding..." spinning={itemAdded?.id === item.id && pending}>
+            <PokemonCard
+              {...item}
+              {...(!pending && {
+                onAdd: () => onAddCard(item)
+              })}
+            />
+          </Spin>
+        )}
+      />
     )
-  }
+  }, [itemAdded?.id, list, onAddCard, pending])
+
+  const memoInfiniteScroll = React.useMemo(() => {
+    return (
+      <InfiniteScroll
+        loadMore={() => loadMore()}
+        hasMore={hasMore}
+        useWindow={false}
+      >
+        {memoList}
+      </InfiniteScroll>
+    )
+  }, [hasMore, loadMore, memoList])
 
   return (
     <Modal
@@ -125,39 +176,9 @@ const ModalPokemon = ({
         paddingBottom: '8px'
       }}
     >
-      <Input
-        mb="1rem"
-        placeholder={'Find pokemon'}
-        suffix={
-          <Box size="24px" inject="img {width:inherit;height:inherit;}">
-            <img src={FindIcon} alt="search" loading="lazy" />
-          </Box>
-        }
-        onChange={debounce(onInputChange, 500)}
-      />
+      {memoInput}
       <Box style={{ height: '78vh', overflow: 'auto' }}>
-        <InfiniteScroll
-          loadMore={() => loadMore()}
-          hasMore={hasMore}
-          useWindow={false}
-        >
-          <List
-            dataSource={list}
-            renderItem={(item) => (
-              <Spin
-                tip="Adding..."
-                spinning={itemAdded?.id === item.id && pending}
-              >
-                <PokemonCard
-                  {...item}
-                  {...(!pending && {
-                    onAdd: () => onAddCard(item)
-                  })}
-                />
-              </Spin>
-            )}
-          />
-        </InfiniteScroll>
+        {memoInfiniteScroll}
       </Box>
     </Modal>
   )

@@ -60,16 +60,25 @@ router.post('/:id/card', async (req, res) => {
 
   try {
     const previousData = UserCollection.findAll()
+    const previousCardList = previousData['cards'] || []
+
+    if (previousCardList.some((i) => i.id === payload.id))
+      return res.json(
+        req.Error.BadRequest('US001DID', {
+          data: [],
+          message: 'duplicate id ' + payload.id
+        })
+      )
 
     const values = {
       ...previousData,
-      cards: [...(previousData['cards'] || []), payload]
+      cards: [...previousCardList, payload]
     }
 
     const success = await UserCollection.update(values)
 
     if (!success) throw new Error('Update database failed')
-    return res.json({ success })
+    return res.json({ success, total: values?.cards.length })
   } catch (e) {
     return res.json(
       req.Error.BadRequest('US0001DBF', {
