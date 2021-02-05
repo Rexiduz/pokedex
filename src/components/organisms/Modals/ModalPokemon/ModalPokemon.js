@@ -34,11 +34,11 @@ const ModalPokemon = ({
 }) => {
   const [list, setList] = React.useState([])
   const [itemAdded, setItemAdded] = React.useState(null)
+  const [input, setInput] = React.useState('')
 
   const savedParams = React.useRef(defaultParams)
   const savedUserCardIDList = React.useRef(userList)
   const savedPending = React.useRef(false)
-  const refInput = React.useRef()
 
   const { data, execute } = useAsync(API.cards.get, false, {
     onSuccess: (data, arg) => {
@@ -64,7 +64,7 @@ const ModalPokemon = ({
       })
     } else {
       savedParams.current = defaultParams
-      refInput.current.value = ''
+      setInput('')
     }
   }, [execute, visible])
 
@@ -126,7 +126,7 @@ const ModalPokemon = ({
   const memoInput = React.useMemo(
     () => (
       <Input
-        ref={refInput}
+        value={input}
         mb="1rem"
         placeholder={'Find pokemon'}
         suffix={
@@ -134,10 +134,13 @@ const ModalPokemon = ({
             <img src={FindIcon} alt="search" loading="lazy" />
           </Box>
         }
-        onChange={debounce(onInputChange, 500)}
+        onChange={(e) => {
+          setInput(e.target.value)
+          debounce(onInputChange, 500)(e)
+        }}
       />
     ),
-    [onInputChange]
+    [onInputChange, input]
   )
 
   const memoList = React.useMemo(() => {
