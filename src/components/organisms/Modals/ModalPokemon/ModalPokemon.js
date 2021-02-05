@@ -38,6 +38,7 @@ const ModalPokemon = ({
   const savedParams = React.useRef(defaultParams)
   const savedUserCardIDList = React.useRef(userList)
   const savedPending = React.useRef(false)
+  const refInput = React.useRef()
 
   const { data, execute } = useAsync(API.cards.get, false, {
     onSuccess: (data, arg) => {
@@ -61,7 +62,10 @@ const ModalPokemon = ({
           setList(filterFromUserList(data?.cards))
         }
       })
-    } else savedParams.current = defaultParams
+    } else {
+      savedParams.current = defaultParams
+      refInput.current.value = ''
+    }
   }, [execute, visible])
 
   React.useEffect(() => {
@@ -122,6 +126,7 @@ const ModalPokemon = ({
   const memoInput = React.useMemo(
     () => (
       <Input
+        ref={refInput}
         mb="1rem"
         placeholder={'Find pokemon'}
         suffix={
