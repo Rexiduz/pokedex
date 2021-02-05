@@ -6,8 +6,8 @@ const createCollection = (data, filepath) => {
   const guard = (func) => (...args) => {
     if (args.every((i) => !i)) return data
 
-    if (typeof args?.[0] === 'function') {
-      return data.filter(args?.[0])
+    if (typeof args[0] === 'function') {
+      return data.filter(args[0])
     }
 
     return func(...args)
