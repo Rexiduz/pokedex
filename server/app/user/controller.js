@@ -31,12 +31,12 @@ router.get('/:id/card', async (req, res) => {
   userData = UserCollection.findAll() || {}
 
   if (search) {
-    result = userData.cards.filter((card) => {
+    result = userData?.cards?.filter((card) => {
       const validType = isIncluded(card.type, search)
       const validName = isIncluded(card.name, search)
       return validType || validName
     })
-  } else result = userData.cards || []
+  } else result = userData?.cards || []
 
   const [cut, hasNext] = paginate(limit, page)(result)
   return res.json({
@@ -48,8 +48,8 @@ router.get('/:id/card', async (req, res) => {
 })
 
 router.post('/:id/card', async (req, res) => {
-  const payload = req.body.data
-  const accountID = req.params.id
+  const payload = req.body?.data
+  const accountID = req.params?.id
 
   let UserCollection
   try {
@@ -78,7 +78,7 @@ router.post('/:id/card', async (req, res) => {
     const success = await UserCollection.update(values)
 
     if (!success) throw new Error('Update database failed')
-    return res.json({ success, total: values.cards.length })
+    return res.json({ success, total: values?.cards?.length })
   } catch (e) {
     return res.json(
       req.Error.BadRequest('US0001DBF', {
