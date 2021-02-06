@@ -139,34 +139,40 @@ const Home = () => {
 
   const memoList = React.useMemo(() => {
     return (
+      <List
+        grid={{ column: 2 }}
+        dataSource={list}
+        renderItem={(item, index) => {
+          return (
+            <PokemonCard
+              {...item}
+              style={{
+                margin: !(index % 2)
+                  ? '10px 10px 10px 20px'
+                  : '10px 20px 10px 10px'
+              }}
+              barSpan={8}
+              onDelete={() => onDelete(item)}
+            />
+          )
+        }}
+      />
+    )
+  }, [list, onDelete])
+
+  const memoInfiniteScroll = React.useMemo(() => {
+    return (
       <Spin tip="Loading..." spinning={pending}>
         <InfiniteScroll
           loadMore={() => loadMore()}
           hasMore={hasMore}
           useWindow={false}
         >
-          <List
-            grid={{ column: 2 }}
-            dataSource={list}
-            renderItem={(item, index) => {
-              return (
-                <PokemonCard
-                  {...item}
-                  style={{
-                    margin: !(index % 2)
-                      ? '10px 10px 10px 20px'
-                      : '10px 20px 10px 10px'
-                  }}
-                  barSpan={8}
-                  onDelete={() => onDelete(item)}
-                />
-              )
-            }}
-          />
+          {memoList}
         </InfiniteScroll>
       </Spin>
     )
-  }, [hasMore, list, loadMore, onDelete, pending])
+  }, [hasMore, loadMore, memoList, pending])
 
   const memoModal = React.useMemo(() => {
     return (
@@ -189,7 +195,7 @@ const Home = () => {
         style={{ height: 'calc(100% - 74px)', overflow: 'auto' }}
         onScroll={console.log}
       >
-        {memoList}
+        {memoInfiniteScroll}
       </Box>
       {memoModal}
     </Layout>
